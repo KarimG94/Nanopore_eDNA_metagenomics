@@ -1,5 +1,11 @@
 #dorado
 
+# basecalling and flagging barcodes
+dorado basecaller dna_r10.4.1_e8.2_400bps_hac@v4.3.0 pod5/ --kit-name SQK-RBK114-24 > raw_calls.bam
+
+# demultiplex into individual fastq files
+dorado demux --no-classify --output-dir demuxed_fastq/ --emit-fastq raw_calls.bam
+
 # nanoplot & chopper
 
 mkdir -p nanoplot_unfiltered/
