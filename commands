@@ -1,0 +1,56 @@
+#dorado
+
+# nanoplot & chopper
+
+mkdir -p nanoplot_unfiltered/
+for fastq in demuxed_fastq/*.fastq; do
+    [ "$fastq" == "demuxed_fastq/unclassified.fastq" ] && continue
+    sample=$(basename "$fastq" .fastq)
+    NanoPlot --fastq "$fastq" --outdir "nanoplot_before/${sample}" \
+             --prefix "${sample}_before_" --plots dot --loglength --threads 4
+done
+
+mkdir -p filtered_fastq/
+for fastq in demuxed_fastq/*.fastq; do
+    [ "$fastq" == "demuxed_fastq/unclassified.fastq" ] && continue
+    sample=$(basename "$fastq" .fastq)
+    chopper -q 10 -l 500 -i "$fastq" > "filtered_fastq/filtered_${sample}.fastq"
+done
+# repeat nanoplot step
+
+# kraken2 for k-mer mapping
+# Downloading and unpacking database (plus_pfp8 more broad, SILVA for including nematodes)
+curl --header 'Host: genome-idx.s3.amazonaws.com' --user-agent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0' --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.9' --referer 'https://benlangmead.github.io/' --header 'Upgrade-Insecure-Requests: 1' --header 'Sec-Fetch-Dest: document' --header 'Sec-Fetch-Mode: navigate' --header 'Sec-Fetch-Site: cross-site' --header 'Sec-Fetch-User: ?1' 'https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_08_GB_20260226.tar.gz' --output 'k2_pluspfp_08_GB_20260226.tar.gz'
+tar -xvzf k2_pluspfp_08_GB_20260226.tar.gz
+curl --header 'Host: www.arb-silva.de' --user-agent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0' --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.9' --referer 'https://www.arb-silva.de/current-release/Kraken2/2.1.6/SSU' --header 'Upgrade-Insecure-Requests: 1' --header 'Sec-Fetch-Dest: document' --header 'Sec-Fetch-Mode: navigate' --header 'Sec-Fetch-Site: same-origin' --header 'Sec-Fetch-User: ?1' 'https://www.arb-silva.de/fileadmin/silva_databases/current/Kraken2/2.1.6/SSU/SILVA_138_2_k2db.tgz' --output 'SILVA_138_2_k2db.tgz'
+tar -xvzf SILVA_138_2_k2db.tgz
+
+#running kraken2
+mkdir -p kraken_results/
+mkdir -p kraken_unclassified/
+
+for fastq in filtered_fastq/*.fastq; do
+    sample=$(basename "$fastq" .fastq)
+    
+    kraken2 --db kraken_databases_pluspfp_8 \
+            --threads 8 \
+            --unclassified-out "kraken_unclassified/${sample}.unclassified.kraken" \
+            --output "kraken_results/${sample}.kraken" \
+            --report "kraken_results/${sample}.report" \
+            "$fastq"
+done
+# running bracken on kraken results for reestimation
+for report in kraken_results/*.report; do
+    sample=$(basename "$report" .report)
+  
+    bracken -d kraken_databases/pluspfp_8/
+    -i "$report"
+    -o bracken_results_r250/${sample}.bracken
+    -r 250
+    -l S           # level = Species
+    -t 5           # minimum number of reads for
+done
+
+# make abundance table from bracken results (optionally use a sample mapping file to give the barcodes a name)
+names=$(awk '{print $2}' sample_map.tsv | paste -sd "," -)
+combine_bracken_outputs.py --files *.bracken --names "$names" -o combined_bracken_abundance.txt
