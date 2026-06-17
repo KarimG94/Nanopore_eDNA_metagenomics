@@ -125,7 +125,7 @@ plot_ordination(ps_rare, ord, color = "Site", shape = "Treatment") +
 top_taxa <- names(sort(taxa_sums(ps), decreasing = TRUE))[1:10]
 ps_top <- prune_taxa(top_taxa, ps)
 
-plot_bar(ps_top, fill = "Phylum") +
+plot_bar(ps_top) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  labs(title = "Community Composition (Top Taxa)")
+  labs(title = "Top Taxa Abundance")
