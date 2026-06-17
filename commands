@@ -60,7 +60,7 @@ for report in kraken_results/*.report; do
     -t 5            # minimum number of reads for including them
 done
 
-# make abundance table from bracken results (optionally use a sample mapping file to give the barcodes a name)
+# make abundance table from bracken results (optionally use a sample mapping file to give the barcodes a name), can be used for statistics later in R
 names=$(awk '{print $2}' sample_map.tsv | paste -sd "," -)
 combine_bracken_outputs.py --files *.bracken --names "$names" -o combined_bracken_abundance.txt
 
@@ -75,3 +75,57 @@ for report in kraken_results/*_bracken_species.report; do
         -o "krona_results/${sample}.krona.html" \
         "$report"
 done
+
+# R statistics
+library(tidyverse)   # for data wrangling & ggplot2
+library(vegan)       # for diversity & ordination
+library(phyloseq)    # for microbiome/eDNA work
+
+# Load the combined abundance table
+abund <- read.table("combined_bracken_abundance.txt", 
+                    header = TRUE, sep = "\t", row.names = 1, check.names = FALSE)
+
+# Keep only the estimated read counts column
+counts <- abund[, grep("est_reads|fraction", colnames(abund), invert = TRUE)]
+
+# Metadata (create this CSV with your sample info)
+metadata <- read.csv("sample_metadata.csv", row.names = 1)
+# Example columns: Site, Treatment, Date, Replicate, etc.
+
+# Create phyloseq object
+otu <- otu_table(as.matrix(counts), taxa_are_rows = TRUE)
+sam <- sample_data(metadata)
+ps <- phyloseq(otu, sam)
+
+# Optional: Rarefy for fair diversity comparisons
+ps_rare <- rarefy_even_depth(ps, rngseed = 123)
+
+# Alpha diversity
+alpha <- estimate_richness(ps_rare, measures = c("Observed", "Shannon", "Simpson"))
+alpha$Sample <- rownames(alpha)
+alpha_long <- pivot_longer(alpha, cols = -Sample, names_to = "Metric", values_to = "Value")
+
+ggplot(alpha_long, aes(x = Sample, y = Value, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Metric, scales = "free_y") +
+  theme_bw() +
+  labs(title = "Alpha Diversity")
+
+# Beta diversity & ordination (community differences)
+dist <- phyloseq::distance(ps_rare, method = "bray")
+ord <- ordinate(ps_rare, method = "NMDS", distance = dist)
+
+plot_ordination(ps_rare, ord, color = "Site", shape = "Treatment") +
+  geom_point(size = 4) +
+  stat_ellipse() +
+  theme_bw() +
+  labs(title = "NMDS of Community Composition (Bray-Curtis)")
+
+# Taxonomic barplot (top taxa)
+top_taxa <- names(sort(taxa_sums(ps), decreasing = TRUE))[1:10]
+ps_top <- prune_taxa(top_taxa, ps)
+
+plot_bar(ps_top, fill = "Phylum") +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(title = "Community Composition (Top Taxa)")
