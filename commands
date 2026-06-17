@@ -52,12 +52,12 @@ done
 for report in kraken_results/*.report; do
     sample=$(basename "$report" .report)
   
-    bracken -d kraken_databases/pluspfp_8/
-    -i "$report"
-    -o bracken_results_r250/${sample}.bracken
-    -r 250
-    -l S           # level = Species
-    -t 5           # minimum number of reads for including them
+    bracken -d kraken_databases/pluspfp_8/ \
+    -i "$report" \
+    -o bracken_results_r250/${sample}.bracken \
+    -r 250 \
+    -l S    \       # level = Species
+    -t 5            # minimum number of reads for including them
 done
 
 # make abundance table from bracken results (optionally use a sample mapping file to give the barcodes a name)
