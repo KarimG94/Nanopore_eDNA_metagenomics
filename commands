@@ -54,7 +54,7 @@ for fastq in filtered_fastq/*.fastq; do
             --report "kraken_results/${sample}.report" \
             "$fastq"
 done
-# running bracken on kraken results for reestimation
+# running bracken on kraken results for reestimation of abundance
 for report in kraken_results/*.report; do
     sample=$(basename "$report" .report)
   
