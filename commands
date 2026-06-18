@@ -77,6 +77,17 @@ for report in kraken_results/*_bracken_species.report; do
 done
 
 # R eco stats
+# first in bash
+
+sudo apt update
+sudo apt install -y libpng-dev libjpeg-dev libtiff-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev
+
+# then R
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("phyloseq")
+install.packages(c("tidyverse", "vegan"))
+
 library(tidyverse)   # for data wrangling & ggplot2
 library(vegan)       # for diversity & ordination
 library(phyloseq)    # for microbiome
