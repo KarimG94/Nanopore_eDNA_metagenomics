@@ -14,7 +14,7 @@ rm merged.bam
 
 # nanoplot & chopper
 
-mkdir -p nanoplot_unfiltered/
+mkdir -p nanoplot_before/
 for fastq in demuxed_fastq/*.fastq; do
     [ "$fastq" == "demuxed_fastq/unclassified.fastq" ] && continue
     sample=$(basename "$fastq" .fastq)
