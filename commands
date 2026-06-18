@@ -75,3 +75,116 @@ for report in kraken_results/*_bracken_species.report; do
         -o "krona_results/${sample}.krona.html" \
         "$report"
 done
+
+# R eco stats
+# if installation doesnt work run this first in bash:
+sudo apt update
+sudo apt install -y libpng-dev libjpeg-dev libtiff-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev
+
+# then in R
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("phyloseq")
+install.packages(c("ggplot2", "vegan"))
+
+library(ggplot2)
+library(vegan)
+library(phyloseq)
+
+# Load the combined Bracken abundance table
+abund_raw <- read.table("~/work/eDNA_course/combined_bracken_abundance.txt",
+                        header = TRUE, sep = "\t",
+                        row.names = 1, check.names = FALSE)
+
+# keep only numeric count columns
+abund <- abund_raw[, grepl("_num$", colnames(abund_raw))]
+colnames(abund) <- gsub("_num$", "", colnames(abund))
+
+# Read sample mapping file from before
+sample_map <- read.table("~/work/eDNA_course/sample_map.tsv",
+                         header = FALSE,
+                         col.names = c("barcode", "SampleID"))
+
+# Create sample metadata with locations
+sample_info <- data.frame(
+  SampleID = sample_map$SampleID,
+  Location = c(
+    rep("Loc_A", 3),      # sample01, sample02, sample03
+    rep("Loc_B", 3),      # sample04, sample05, sample06
+    rep("Loc_C", 2),      # sample07, sample08
+    paste0("Loc_", 9:24)  # sample09 to sample24
+  )
+)
+
+rownames(sample_info) <- sample_info$SampleID
+sample_info$SampleID <- NULL
+
+# create phyloseq object
+otu <- otu_table(as.matrix(abund), taxa_are_rows = TRUE)
+sam <- sample_data(sample_info)
+ps <- phyloseq(otu, sam)
+
+print(ps)
+
+# Alpha diversity
+alpha <- estimate_richness(ps, measures = c("Observed", "Shannon", "Simpson"))
+print(alpha)
+
+# NMDS
+set.seed(123)
+ord <- ordinate(ps, method = "NMDS", distance = "bray")
+
+# Plots
+
+# Extract NMDS scores
+nmds_scores <- as.data.frame(ord$points)
+colnames(nmds_scores) <- c("NMDS1", "NMDS2")
+nmds_scores$SampleID <- rownames(nmds_scores)
+
+# merge with sample information
+nmds_scores <- merge(nmds_scores, sample_info, by = "row.names")
+rownames(nmds_scores) <- nmds_scores$Row.names
+nmds_scores$Row.names <- NULL
+
+# Plotting
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Location)) +
+  geom_point(size = 4, alpha = 0.85) +
+  geom_text(aes(label = SampleID), size = 3, vjust = -0.8, show.legend = FALSE) +
+  theme_bw(base_size = 14) +
+  labs(title = "NMDS of Samples (Bray-Curtis)",
+       subtitle = paste("Stress =", round(ord$stress, 3)),
+       color = "Location") +
+  
+  # === CHOOSE YOUR COLORS HERE ===
+  scale_color_manual(values = c(
+    "Loc_A"   = "#E41A1C",   # red
+    "Loc_B"   = "#377EB8",   # blue
+    "Loc_C"   = "#4DAF4A",   # green
+    "Loc_09"  = "#984EA3",
+    "Loc_10"  = "#FF7F00",
+    "Loc_11"  = "#FFFF33",
+    "Loc_12"  = "#A65628",
+    "Loc_13"  = "#F781BF",
+    "Loc_14"  = "#999999",
+    "Loc_15"  = "#66C2A5",
+    "Loc_16"  = "#FC8D62",
+    "Loc_17"  = "#8DA0CB",
+    "Loc_18"  = "#E78AC3",
+    "Loc_19"  = "#A6D854",
+    "Loc_20"  = "#FFD92F",
+    "Loc_21"  = "#E5C494",
+    "Loc_22"  = "#B3B3B3",
+    "Loc_23"  = "#1B9E77",
+    "Loc_24"  = "#D95F02"
+  ))
+# Shannon diversity barplot
+alpha_shannon <- estimate_richness(ps, measures = "Shannon")
+alpha_shannon$Sample <- rownames(alpha_shannon)
+
+ggplot(alpha_shannon, aes(x = reorder(Sample, Shannon), y = Shannon)) +
+  geom_bar(stat = "identity", fill = "#2E86AB", width = 0.7) +
+  coord_flip() +
+  theme_bw(base_size = 13) +
+  labs(title = "Shannon Diversity per Sample",
+       x = NULL, y = "Shannon Index")
