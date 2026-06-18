@@ -76,6 +76,14 @@ for report in kraken_results/*_bracken_species.report; do
         "$report"
 done
 
+
+# for converting fastq to fasta (for example for blasting)
+mkdir -p fasta_files/
+for fastq in demuxed_fastq/*.fastq; do
+    sample=$(basename "$fastq" .fastq)
+    seqtk seq -A "$fastq" > "fasta_files/${sample}.fasta"
+done
+
 # R eco stats
 # if installation doesnt work run this first in bash:
 sudo apt update
@@ -189,4 +197,3 @@ ggplot(alpha_shannon, aes(x = reorder(Sample, Shannon), y = Shannon)) +
   theme_bw(base_size = 13) +
   labs(title = "Shannon Diversity per Sample",
        x = NULL, y = "Shannon Index")
-
