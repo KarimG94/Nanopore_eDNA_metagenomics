@@ -70,8 +70,8 @@ for report in kraken_results/*_bracken_species.report; do
     sample=$(basename "$report" _bracken_species.report)
     
     ktImportTaxonomy \
-        -t 5 \
-        -m 2 \
+        -t 5 \                                     # column with taxID
+        -m 2 \                                     # column with read abundances
         -o "krona_results/${sample}.krona.html" \
         "$report"
 done
