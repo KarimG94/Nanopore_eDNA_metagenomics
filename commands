@@ -82,6 +82,8 @@ sudo apt update
 sudo apt install -y libpng-dev libjpeg-dev libtiff-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev
 
 # then in R
+# R eco stats
+
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
@@ -155,12 +157,10 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Location)) +
   labs(title = "NMDS of Samples (Bray-Curtis)",
        subtitle = paste("Stress =", round(ord$stress, 3)),
        color = "Location") +
-  
-  # === CHOOSE YOUR COLORS HERE ===
   scale_color_manual(values = c(
-    "Loc_A"   = "#E41A1C",   # red
-    "Loc_B"   = "#377EB8",   # blue
-    "Loc_C"   = "#4DAF4A",   # green
+    "Loc_A"   = "#E41A1C",
+    "Loc_B"   = "#377EB8",
+    "Loc_C"   = "#4DAF4A",  
     "Loc_09"  = "#984EA3",
     "Loc_10"  = "#FF7F00",
     "Loc_11"  = "#FFFF33",
@@ -178,6 +178,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Location)) +
     "Loc_23"  = "#1B9E77",
     "Loc_24"  = "#D95F02"
   ))
+
 # Shannon diversity barplot
 alpha_shannon <- estimate_richness(ps, measures = "Shannon")
 alpha_shannon$Sample <- rownames(alpha_shannon)
@@ -188,3 +189,4 @@ ggplot(alpha_shannon, aes(x = reorder(Sample, Shannon), y = Shannon)) +
   theme_bw(base_size = 13) +
   labs(title = "Shannon Diversity per Sample",
        x = NULL, y = "Shannon Index")
+
