@@ -79,7 +79,7 @@ done
 # R statistics
 library(tidyverse)   # for data wrangling & ggplot2
 library(vegan)       # for diversity & ordination
-library(phyloseq)    # for microbiome/eDNA work
+library(phyloseq)    # for microbiome
 
 # Load the combined abundance table
 abund <- read.table("combined_bracken_abundance.txt", 
