@@ -6,7 +6,7 @@ dorado basecaller dna_r10.4.1_e8.2_400bps_hac@v4.3.0 pod5/ --kit-name SQK-RBK114
 # demultiplex into individual fastq files
 dorado demux --no-classify --output-dir demuxed_fastq/ --emit-fastq raw_calls.bam
 
-# merge bam and convert to fastq
+# merge bam and convert to fastq (when doing the live basecalling without dorado)
 
 samtools merge merged.bam *.bam
 samtools fastq merged.bam > merged.fastq
