@@ -47,7 +47,7 @@ mkdir -p kraken_unclassified/
 for fastq in filtered_fastq/*.fastq; do
     sample=$(basename "$fastq" .fastq)
     
-    kraken2 --db kraken_databases_pluspfp_8 \
+    kraken2 --db kraken_databases/pluspfp_8 \
             --threads 8 \
             --unclassified-out "kraken_unclassified/${sample}.unclassified.kraken" \
             --output "kraken_results/${sample}.kraken" \
