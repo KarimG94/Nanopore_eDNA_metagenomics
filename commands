@@ -76,7 +76,7 @@ for report in kraken_results/*_bracken_species.report; do
         "$report"
 done
 
-# R statistics
+# R eco stats
 library(tidyverse)   # for data wrangling & ggplot2
 library(vegan)       # for diversity & ordination
 library(phyloseq)    # for microbiome
