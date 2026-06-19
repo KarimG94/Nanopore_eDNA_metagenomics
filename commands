@@ -54,7 +54,7 @@ for fastq in filtered_fastq/*.fastq; do
             --report "kraken_results/${sample}.report" \
             "$fastq"
 done
-# running bracken on kraken results for reestimation of abundance
+# running bracken on kraken results for reestimation of abundance, l is level, r is read length, t is minimum reads to include a species
 for report in kraken_results/*.report; do
     sample=$(basename "$report" .report)
   
@@ -62,22 +62,22 @@ for report in kraken_results/*.report; do
     -i "$report" \
     -o bracken_results_r250/${sample}.bracken \
     -r 250 \
-    -l S    \       # level = Species
-    -t 5            # minimum number of reads for including them
+    -l S   \
+    -t 5            
 done
 
 # make abundance table from bracken results (optionally use a sample mapping file to give the barcodes a name), can be used for statistics later in R
 names=$(awk '{print $2}' sample_map.tsv | paste -sd "," -)
 combine_bracken_outputs.py --files *.bracken --names "$names" -o combined_bracken_abundance.txt
 
-# krona for plotting
+# krona for plotting, t is columns with taxID, m is column with read abundances
 ktUpdateTaxonomy.sh
 for report in kraken_results/*_bracken_species.report; do
     sample=$(basename "$report" _bracken_species.report)
     
     ktImportTaxonomy \
-        -t 5 \                                     # column with taxID
-        -m 2 \                                     # column with read abundances
+        -t 5 \
+        -m 2 \
         -o "krona_results/${sample}.krona.html" \
         "$report"
 done
