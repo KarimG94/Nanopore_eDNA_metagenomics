@@ -30,6 +30,15 @@ for fastq in demuxed_fastq/*.fastq; do
 done
 # repeat nanoplot step
 
+mkdir -p nanoplot_filtered
+
+for fastq in filtered_fastq/*.fastq; do
+    [ "$fastq" == "filtered_fastq/_fastq/unclassified.fastq" ] && continue
+    sample=$(basename "$fastq" .fastq)
+    NanoPlot --fastq "$fastq" --outdir "nanoplot_filtered/${sample}" \
+             --prefix "${sample}_after_" --plots dot --loglength --threads 4
+done
+
 # kraken2 for k-mer mapping
 # Downloading and unpacking database (plus_pfp8 more broad, SILVA for including nematodes)
 curl --header 'Host: genome-idx.s3.amazonaws.com' --user-agent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0' --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.9' --referer 'https://benlangmead.github.io/' --header 'Upgrade-Insecure-Requests: 1' --header 'Sec-Fetch-Dest: document' --header 'Sec-Fetch-Mode: navigate' --header 'Sec-Fetch-Site: cross-site' --header 'Sec-Fetch-User: ?1' 'https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_08_GB_20260226.tar.gz' --output 'k2_pluspfp_08_GB_20260226.tar.gz'
