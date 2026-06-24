@@ -1,2 +1,2 @@
 # basecalling using dorado 2.0.1+bf630305
-~/dorado-2.0.1-linux-x64/bin/dorado basecaller sup pod5/ --emit-fastq --device cuda:all --batchsize 0 --recursive | pigz -p 8 -11 > amplicon_sup.fastq.gz
+~/dorado-2.0.1-linux-x64/bin/dorado basecaller sup pod5/ --emit-fastq --device cuda:all --batchsize 0 --recursive | pigz -p 8 -9 > amplicon_sup.fastq.gz
