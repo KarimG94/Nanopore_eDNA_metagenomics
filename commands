@@ -8,8 +8,8 @@ dorado demux --no-classify --output-dir demuxed_fastq/ --emit-fastq raw_calls.ba
 
 # merge bam and convert to fastq (when doing the live basecalling without dorado)
 
-samtools merge merged.bam *.bam
-samtools fastq merged.bam > merged.fastq
+for number in {01..08} ; do samtools merge barcode${number}/*.bam -o merged${number}.bam ; done
+for number in {01..08} ; do samtools fastq merged${number}.bam > demuxed_fastq/merged${number}.fastq  ; done
 rm merged.bam
 
 # nanoplot & chopper
