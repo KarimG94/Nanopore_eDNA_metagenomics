@@ -11,6 +11,8 @@ unzip nematode _genomes.zip
 
 find . -name "*fna" -exec cat {} + >> nematodes_ncbi_datasettool.fasta
 
-# building kraken2 database using kraken2 v
+# building kraken2 database using kraken2 v2.17.1
 DB_DIR=~/kraken_nematode
-
+kraken2-build --download-taxonomy --db $DB_DIR --use-ftp
+kraken2-build --add-to-library nematodes_ncbi_datasettool.fasta --db $DB_DIR
+kraken2-build --build --db $DB_DIR --threads 12
