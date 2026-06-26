@@ -1,1 +1,16 @@
+# install ncbi_datasets (v18.31.0) using conda first
+# nematode database
+
+datasets download genome taxon 6231  \
+--assembly-source all     \
+--assembly-level complete,chromosome,scaffold     \
+--include genome,cds,rna    \
+--filename nematode_genomes.zip
+
+unzip nematode _genomes.zip
+
+find . -name "*fna" -exec cat {} + >> nematodes_ncbi_datasettool.fasta
+
+# building kraken2 database using kraken2 v
+DB_DIR=~/kraken_nematode
 
