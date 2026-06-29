@@ -16,4 +16,4 @@ DB_DIR=~/kraken_nematode
 kraken2-build --download-taxonomy --db $DB_DIR --use-ftp
 kraken2-build --add-to-library nematodes_ncbi_datasettool.fasta --db $DB_DIR
 kraken2-build --build --db $DB_DIR --threads 12
-bracken-build -d ~/kraken_nematode/ -t 16 -k 35 -l 350
+bracken-build -d $DB_DIR -t 16 -k 35 -l 350
