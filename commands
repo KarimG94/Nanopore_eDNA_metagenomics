@@ -48,6 +48,7 @@ tar -xvzf SILVA_138_2_k2db.tgz
 # for more powerful computers, nt database
 curl --header 'Host: genome-idx.s3.amazonaws.com' --user-agent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0' --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.9' --referer 'https://benlangmead.github.io/' --header 'Upgrade-Insecure-Requests: 1' --header 'Sec-Fetch-Dest: document' --header 'Sec-Fetch-Mode: navigate' --header 'Sec-Fetch-Site: cross-site' --header 'Sec-Fetch-User: ?1' 'https://genome-idx.s3.amazonaws.com/kraken/k2_core_nt_20251015.tar.gz' --output 'k2_core_nt_20251015.tar.gz'
 tar -xvzf k2_core_nt_20251015.tar.gz
+# or use a custom database, build as seen under custom_kraken_database
 
 #running kraken2
 mkdir -p kraken_results/
